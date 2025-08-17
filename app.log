@@ -1,0 +1,16 @@
+🟢 프로그램 시작
+✅ 복사됨: 1.png
+✅ 복사됨: 2.png
+✅ 복사됨: 3.png
+✅ 복사됨: 4.png
+✅ 작업 완료!
+❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\paul\Desktop\dev\파이썬qt\main.py", line 199, in run_copy
+    final_target = copy_images(file_names, source, target, self.log)
+  File "C:\Users\paul\Desktop\dev\파이썬qt\main.py", line 78, in copy_images
+    (f for f in os.listdir(source_dir) if os.path.splitext(f)[0] == name), None
+                ~~~~~~~~~~^^^^^^^^^^^^
+FileNotFoundError: [WinError 3] 지정된 경로를 찾을 수 없습니다: 'C:/Users/paul/Desktop/오답노트11'
+
+[2025-08-17 15:00:09] 🟢 프로그램 시작

@@ -1,0 +1,8 @@
+{
+  "python.linting.enabled": true,
+  "python.linting.ruffEnabled": true,
+  "python.linting.ruffArgs": ["--fix"],
+  "python.formatting.provider": "none",
+  "editor.formatOnSave": true,
+
+}

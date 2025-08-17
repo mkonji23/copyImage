@@ -1,0 +1,12 @@
+[tool.ruff]
+# 오류만 빨간줄로 표시
+select = ["E"]  
+
+# 경고/스타일 검사 추가
+ignore = ["W291"]  
+
+# 파일 제외
+exclude = ["build", "dist", ".venv"]
+
+# max line length
+line-length = 88
