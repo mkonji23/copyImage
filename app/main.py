@@ -34,7 +34,7 @@ class ImageCopyApp(QMainWindow):
         self.resize(500, 450)
 
         # 아이콘 기본값 처리
-        icon_path = "resources/icon.png"
+        icon_path = "resources/icon.ico"
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 

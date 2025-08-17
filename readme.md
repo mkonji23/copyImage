@@ -1,4 +1,8 @@
 # 배포
+```
+cd app
+pyinstaller --noconsole --onefile --icon=resources/icon.png main.py
+```
 
 # 실행
 ```
