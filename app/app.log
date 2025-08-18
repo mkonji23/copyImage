@@ -38,3 +38,37 @@ Traceback (most recent call last):
 KeyboardInterrupt
 
 [2025-08-17 15:43:57] 🟢 프로그램 시작
+[2025-08-18 11:11:21] 🟢 프로그램 시작
+[2025-08-18 11:11:49] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\myh\Desktop\dev\copyImage\app\main.py", line 193, in run_copy
+    final_target = copy_images(file_names, source, target, self.log)
+  File "C:\Users\myh\Desktop\dev\copyImage\app\copy_utils.py", line 7, in copy_images
+    os.makedirs(target_dir, exist_ok=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 217, in makedirs
+  File "<frozen os>", line 217, in makedirs
+  File "<frozen os>", line 227, in makedirs
+PermissionError: [WinError 5] 액세스가 거부되었습니다: 'C:/Users/paul'
+
+[2025-08-18 11:12:05] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\myh\Desktop\dev\copyImage\app\main.py", line 193, in run_copy
+    final_target = copy_images(file_names, source, target, self.log)
+  File "C:\Users\myh\Desktop\dev\copyImage\app\copy_utils.py", line 7, in copy_images
+    os.makedirs(target_dir, exist_ok=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 217, in makedirs
+  File "<frozen os>", line 217, in makedirs
+  File "<frozen os>", line 227, in makedirs
+PermissionError: [WinError 5] 액세스가 거부되었습니다: 'C:/Users/paul'
+
+[2025-08-18 11:12:23] 🟢 prevConfig.json 내용을 불러왔습니다
+[2025-08-18 11:12:26] 🟢 prevConfig.json 내용을 불러왔습니다
+[2025-08-18 11:13:28] 🟢 4개 파일 선택됨
+[2025-08-18 11:13:29] 📁 대상 폴더 생성: C:/Users/myh/Desktop/오답노트2
+[2025-08-18 11:13:29] ✅ 복사됨: mr2 (1) (1).PNG
+[2025-08-18 11:13:29] ✅ 복사됨: mr2 (1).PNG
+[2025-08-18 11:13:29] ✅ 복사됨: mr1 (11).PNG
+[2025-08-18 11:13:29] ✅ 복사됨: mr1 (10).PNG
+[2025-08-18 11:13:29] ✅ 작업 완료!
