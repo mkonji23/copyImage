@@ -5,3 +5,8 @@ app/dist
 app/build
 app/__pycache__
 app/app.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
