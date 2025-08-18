@@ -8,6 +8,7 @@ from config import DEFAULT_DST, DEFAULT_SRC, load_previous_config, save_config
 from copy_utils import copy_images
 from log_utils import append_log
 from PySide6.QtGui import QAction, QIcon
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
     QDialog,
@@ -43,11 +44,11 @@ class ImageCopyApp(QMainWindow):
         self.setCentralWidget(central)
 
         self.src_input = QLineEdit()
-        self.src_btn = QPushButton("원본 폴더 선택")
+        self.src_btn = QPushButton("원본 폴더 경로")
         self.dst_input = QLineEdit()
-        self.dst_btn = QPushButton("대상 폴더 선택")
+        self.dst_btn = QPushButton("대상 폴더 경로")
         self.files_input = QLineEdit()
-        self.run_btn = QPushButton("복사 실행")
+        self.run_btn = QPushButton("복사 실행(Enter)")
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
 
@@ -69,23 +70,56 @@ class ImageCopyApp(QMainWindow):
         h2.addWidget(self.dst_list_btn)
         layout.addLayout(h2)
 
-        layout.addLayout(h2)
-        layout.addWidget(QLabel("파일명 입력(콤마(,) 구분):"))
-        layout.addWidget(self.files_input)
+        # --- 파일명 입력 라인 ---
         h3 = QHBoxLayout()
-        h3.addWidget(self.run_btn)
+        h3.addWidget(QLabel("파일명 입력(콤마(,) 구분):"))
         layout.addLayout(h3)
+
+        # input, 초기화 버튼
+        h4 = QHBoxLayout()
+        
+        # input
+        self.files_input = QLineEdit()
+        h4.addWidget(self.files_input)
+         # Enter 키 입력 시 run_copy 실행
+        self.files_input.returnPressed.connect(self.run_copy)
+
+        # 초기화 버튼
+        clear_btn = QPushButton("초기화")
+        clear_btn.clicked.connect(self.clear_input)
+        h4.addWidget(clear_btn)
+
+        layout.addLayout(h4)
+
+        # h5 로그
+        h5 = QHBoxLayout()
+        h5.addWidget(self.run_btn)
+        layout.addLayout(h5)
         layout.addWidget(QLabel("로그:"))
         layout.addWidget(self.log_output)
         central.setLayout(layout)
 
         # 메뉴
         menu_bar = self.menuBar()
+
+        # 파일 메뉴
         file_menu = menu_bar.addMenu("파일")
         default_action = QAction("기본 경로 불러오기", self)
         close_action = QAction("닫기", self)
+
         file_menu.addAction(default_action)
         file_menu.addAction(close_action)
+
+        # 설정 메뉴
+        config_menu = menu_bar.addMenu("설정")
+        self.explorer_action = QAction("복사 후 폴더 띄우기", self)
+        self.explorer_action.setCheckable(True)  # 체크박스처럼 만들기
+        self.explorer_action.setChecked(True)    # 기본 체크 여부
+
+        # 체크 상태 변경 시 로그 찍기
+        self.explorer_action.toggled.connect(self.on_explorer_toggled)
+        
+        config_menu.addAction(self.explorer_action)
 
         # 오른쪽 끝에 띄우기 위해 스페이서 위젯
         info_menu = menu_bar.addMenu("정보")
@@ -107,6 +141,20 @@ class ImageCopyApp(QMainWindow):
         # prevConfig.json 없으면 초기 설정
         self.initialize_config()
 
+    # 콜백 함수
+    def on_explorer_toggled(self, checked: bool):
+        if checked:
+            self.log("✅ 폴더 띄우기 옵션 체크됨")
+        else:
+            self.log("❌ 폴더 띄우기 옵션 체크 해제됨")
+
+    # 키 이벤트 재정의
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            self.run_copy()
+
+    def clear_input(self):
+        self.files_input.clear()
     # --- 로그 ---
     def log(self, message):
         append_log(self.log_output, message)
@@ -179,8 +227,7 @@ class ImageCopyApp(QMainWindow):
             self.dst_input.setText(self.config.get("target_dir", DEFAULT_DST))
             self.files_input.setText(self.config.get("file_names", ""))
 
-        # --- 복사 실행 ---
-
+    # --- 복사 실행 ---
     def run_copy(self):
         source = self.src_input.text()
         target = self.dst_input.text()
@@ -188,18 +235,19 @@ class ImageCopyApp(QMainWindow):
             s.strip() for s in self.files_input.text().split(",") if s.strip()
         ]
         if not source or not target or not file_names:
-            self.log("❌ 모든 항목을 입력해주세요")
+            self.log("❌ 파일명을 입력해주세요.")
             return
-        final_target = copy_images(file_names, source, target, self.log)
+        copy_images(file_names, source, target, self.log)
+        target_path = os.path.abspath(target)
         save_config(
             {
                 "source_dir": source,
-                "target_dir": final_target,
+                "target_dir": target_path,
                 "file_names": self.files_input.text(),
             }
         )
-        if sys.platform == "win32":
-            subprocess.Popen(f'explorer "{final_target}"')
+        if self.explorer_action.isChecked() and sys.platform == "win32":
+            subprocess.Popen(f'explorer "{target_path}"')
         self.log("✅ 작업 완료!")
 
     # --- 전역 예외 처리 ---

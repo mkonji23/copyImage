@@ -19,4 +19,4 @@ def copy_images(file_names, source_dir, target_dir, log_callback):
             log_callback(f"✅ 복사됨: {matched_file}")
         else:
             log_callback(f"⚠️ 없음: {name}.*")
-    return target_dir
+
