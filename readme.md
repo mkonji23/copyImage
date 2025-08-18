@@ -2,7 +2,17 @@
 
 ```
 cd app
-pyinstaller --noconsole --onefile --icon=resources/icon.png main.py
+
+@echo off
+:: 1. PyInstaller 빌드
+pyinstaller --noconsole --onefile --icon=resources/icon.ico main.py
+
+:: 2. ZIP 생성
+powershell Compress-Archive -Path dist\main.exe -DestinationPath dist\main.zip
+
+echo ✅ 빌드 + ZIP 완료
+pause
+
 ```
 
 # 실행

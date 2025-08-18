@@ -34,8 +34,15 @@ class ImageCopyApp(QMainWindow):
         self.setWindowTitle("이미지 파일 복사기")
         self.resize(500, 450)
 
+
+        if getattr(sys, "frozen", False):
+            # onefile 실행 시 임시 폴더
+            base_path = sys._MEIPASS
+        else:
+            # 개발 환경
+            base_path = os.path.abspath(".")
         # 아이콘 기본값 처리
-        icon_path = "resources/icon.ico"
+        icon_path = os.path.join(base_path, "resources", "icon.ico")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 
