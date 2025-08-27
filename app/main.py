@@ -1,8 +1,12 @@
 import os
+import re
 import subprocess
 import sys
 import traceback
 from datetime import datetime
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 
 from config import DEFAULT_DST, DEFAULT_SRC, load_previous_config, save_config
 from copy_utils import copy_images
@@ -58,8 +62,13 @@ class ImageCopyApp(QMainWindow):
         self.run_btn = QPushButton("복사 실행(Enter)")
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
+        # 출력버튼
+        self.pdf_btn = QPushButton("PDF로 저장")
+        self.pdf_btn.clicked.connect(self.save_images_to_pdf)
+
 
         layout = QVBoxLayout()
+        
         layout.addWidget(QLabel("원본 폴더:"))
         h1 = QHBoxLayout()
         h1.addWidget(self.src_input)
@@ -102,6 +111,8 @@ class ImageCopyApp(QMainWindow):
         h5 = QHBoxLayout()
         h5.addWidget(self.run_btn)
         layout.addLayout(h5)
+        # pdf버튼
+        layout.addWidget(self.pdf_btn)
         layout.addWidget(QLabel("로그:"))
         layout.addWidget(self.log_output)
         central.setLayout(layout)
@@ -356,8 +367,85 @@ class ImageCopyApp(QMainWindow):
         layout.addWidget(close_btn)
 
         dialog.exec()
+    # image를 pdf로 
+    def save_images_to_pdf(self):
+        folder = self.dst_input.text()
+        if not folder or not os.path.exists(folder):
+            self.log("❌ 대상 폴더가 존재하지 않습니다")
+            return
+        def natural_sort_key(s):
+            """
+            문자열을 숫자와 문자로 나눠서 정렬 가능하게 변환
+            'image10.png' -> ['image', 10, '.png']
+            """
+            return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s)]
 
+        files = [
+            os.path.join(folder, f)
+            for f in sorted(os.listdir(folder), key=natural_sort_key)  # natural sort 적용
+            if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif"))
+        ]
 
+        if not files:
+            self.log("❌ 대상 폴더에 이미지가 없습니다")
+            return
+
+        # 저장 경로
+        pdf_path = os.path.join(folder, "이미지_모음.pdf")
+        counter = 1
+        while os.path.exists(pdf_path):
+            pdf_path = os.path.join(folder, f"이미지_모음_{counter}.pdf")
+            counter += 1
+
+        self.log(f"🟢 PDF 생성 시작: {pdf_path}")
+
+        # A4 기준
+        page_w, page_h = A4  # points
+        c = canvas.Canvas(pdf_path, pagesize=A4)
+
+        cols = 2
+        rows = 3
+        h_margin = 10  # points
+        v_margin = 10  # points
+
+        img_w = (page_w - (cols + 1) * h_margin) / cols
+        img_h = (page_h - (rows + 1) * v_margin) / rows
+
+        for i, img_file in enumerate(files):
+            page_idx = i // 6
+            idx_in_page = i % 6
+
+            if idx_in_page == 0 and i != 0:
+                c.showPage()  # 새 페이지
+
+            col = idx_in_page // 3  # 0:A열, 1:B열
+            row = idx_in_page % 3   # 0~2
+
+            x = h_margin + col * (img_w + h_margin)
+            y = page_h - v_margin - (row + 1) * img_h - row * v_margin
+
+            try:
+                img = ImageReader(img_file)
+                iw, ih = img.getSize()
+                ratio = min(img_w / iw, img_h / ih)
+                draw_w = iw * ratio
+                draw_h = ih * ratio
+                # 가운데 정렬
+                draw_x = x + (img_w - draw_w) / 2
+                draw_y = y + (img_h - draw_h) / 2
+                c.drawImage(img, draw_x, draw_y, width=draw_w, height=draw_h)
+            except Exception as e:
+                self.log(f"⚠️ 이미지 삽입 실패: {img_file} ({e})")
+
+        c.save()
+        self.log(f"✅ PDF 저장 완료: {pdf_path}")
+        # PDF가 저장된 폴더 열기
+        if sys.platform == "win32":
+            subprocess.Popen(f'explorer "{os.path.abspath(folder)}"')
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", os.path.abspath(folder)])
+        elif sys.platform == "linux":
+            subprocess.Popen(["xdg-open", os.path.abspath(folder)])
 # --- 실행 ---
 if __name__ == "__main__":
     app = QApplication(sys.argv)
