@@ -302,3 +302,127 @@ KeyboardInterrupt
 [2025-08-27 15:55:20] ✅ PDF 저장 완료: C:\Users\honghong\Desktop\새 폴더\이미지_모음_6.pdf
 [2025-08-27 15:56:02] 🟢 PDF 생성 시작: C:\Users\honghong\Desktop\새 폴더\이미지_모음_7.pdf
 [2025-08-27 15:56:02] ✅ PDF 저장 완료: C:\Users\honghong\Desktop\새 폴더\이미지_모음_7.pdf
+[2025-08-27 23:03:09] 🟢 프로그램 시작
+[2025-08-27 23:03:43] 🟢 21개 파일 선택됨
+[2025-08-27 23:03:45] ✅ 복사됨: image-1.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-2.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-3.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-4.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-5.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-6.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-7.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-8.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-9.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-10.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-11.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-12.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-13.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-14.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-15.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-16.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-17.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-18.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-19.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-20.png
+[2025-08-27 23:03:45] ✅ 복사됨: image-21.png
+[2025-08-27 23:03:45] ✅ 작업 완료!
+[2025-08-27 23:03:46] 🟢 PDF 생성 시작: C:/Users/hong/Desktop/nextjs/copy\이미지_모음.pdf
+[2025-08-27 23:03:47] ✅ PDF 저장 완료: C:/Users/hong/Desktop/nextjs/copy\이미지_모음.pdf
+[2025-08-28 13:46:06] 🟢 프로그램 시작
+[2025-08-28 13:48:13] ❌ 폴더 띄우기 옵션 체크 해제됨
+[2025-08-28 13:48:16] ✅ 복사됨: image-1.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-2.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-3.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-4.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-5.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-6.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-7.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-8.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-9.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-10.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-11.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-12.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-13.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-14.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-15.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-16.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-17.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-18.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-19.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-20.png
+[2025-08-28 13:48:16] ✅ 복사됨: image-21.png
+[2025-08-28 13:48:16] ✅ 작업 완료!
+[2025-08-28 13:48:18] 🟢 PDF 생성 시작: C:\Users\hong\Desktop\nextjs\copy\이미지_모음_1.pdf
+[2025-08-28 13:48:19] ✅ PDF 저장 완료: C:\Users\hong\Desktop\nextjs\copy\이미지_모음_1.pdf
+[2025-08-28 13:49:23] 🟢 프로그램 시작
+[2025-08-28 14:16:26] 🟢 프로그램 시작
+[2025-08-28 14:16:30] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 389, in save_images_to_pdf_with_template
+    for f in sorted(os.listdir(folder), key=natural_sort_key)
+                                            ^^^^^^^^^^^^^^^^
+NameError: name 'natural_sort_key' is not defined
+
+[2025-08-28 14:17:29] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 389, in save_images_to_pdf_with_template
+    for f in sorted(os.listdir(folder), key=self.natural_sort_key)
+                                            ^^^^^^^^^^^^^^^^
+NameError: name 'natural_sort_key' is not defined
+
+[2025-08-28 14:17:34] 🟢 프로그램 시작
+[2025-08-28 14:17:35] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 389, in save_images_to_pdf_with_template
+    for f in sorted(os.listdir(folder), key=self.natural_sort_key)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: ImageCopyApp.natural_sort_key() takes 1 positional argument but 2 were given
+
+[2025-08-28 14:19:34] 🟢 프로그램 시작
+[2025-08-28 14:19:36] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 452, in save_images_to_pdf_with_template
+    base_page.merge_page(overlay_pdf.pages[0])
+    ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'merge_page'
+
+[2025-08-28 14:22:37] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 561, in <module>
+    window.show()
+             ^^^^^
+KeyboardInterrupt
+
+[2025-08-28 14:22:39] 🟢 프로그램 시작
+[2025-08-28 14:24:07] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 562, in <module>
+KeyboardInterrupt
+
+[2025-08-28 14:24:09] 🟢 프로그램 시작
+[2025-08-28 14:25:27] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 559, in <module>
+    window.show()
+             ^^^^^
+KeyboardInterrupt
+
+[2025-08-28 14:25:29] 🟢 프로그램 시작
+[2025-08-28 14:28:33] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 560, in <module>
+    subprocess.Popen(["xdg-open", os.path.abspath(folder)])
+     ^^^^^^^^^^
+KeyboardInterrupt
+
+[2025-08-28 14:28:35] 🟢 프로그램 시작
+[2025-08-28 14:30:10] 🟢 프로그램 시작
+[2025-08-28 14:30:31] 🟢 프로그램 시작
+[2025-08-28 14:31:06] 🟢 프로그램 시작
+[2025-08-28 14:32:23] ❌ 예외 발생:
+Traceback (most recent call last):
+  File "C:\Users\hong\Desktop\nextjs\copyImage\app\main.py", line 569, in <module>
+    sys.exit(app.exec())
+             ^^^^^^^^^^
+KeyboardInterrupt
+
