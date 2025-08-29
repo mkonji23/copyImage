@@ -4,6 +4,7 @@ import re
 import subprocess
 import sys
 import traceback
+from dialogs import PathDialog
 from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
@@ -55,11 +56,13 @@ class ImageCopyApp(QMainWindow):
         # 중앙 위젯
         central = QWidget()
         self.setCentralWidget(central)
+        layout = QVBoxLayout()
 
-        self.src_input = QLineEdit()
-        self.src_btn = QPushButton("원본 폴더 경로")
-        self.dst_input = QLineEdit()
-        self.dst_btn = QPushButton("대상 폴더 경로")
+        # 경로 버튼
+        self.path_config_btn = QPushButton("경로 설정 열기")
+        self.path_config_btn.clicked.connect(self.open_path_dialog)
+        layout.addWidget(self.path_config_btn)
+
         self.files_input = QLineEdit()
         self.run_btn = QPushButton("복사 실행(Enter)")
         self.log_output = QTextEdit()
@@ -67,25 +70,6 @@ class ImageCopyApp(QMainWindow):
         # 출력버튼
         self.pdf_btn = QPushButton("PDF로 저장")
         self.pdf_btn.clicked.connect(self.save_images_to_pdf_with_template)
-
-        layout = QVBoxLayout()
-
-        layout.addWidget(QLabel("원본 폴더:"))
-        h1 = QHBoxLayout()
-        h1.addWidget(self.src_input)
-        h1.addWidget(self.src_btn)
-        self.src_list_btn = QPushButton("이미지 선택")
-        self.src_list_btn.clicked.connect(self.select_src_files)
-        h1.addWidget(self.src_list_btn)
-        layout.addLayout(h1)
-
-        h2 = QHBoxLayout()
-        h2.addWidget(self.dst_input)
-        h2.addWidget(self.dst_btn)
-        self.dst_list_btn = QPushButton("파일보기")
-        self.dst_list_btn.clicked.connect(self.show_dst_files)
-        h2.addWidget(self.dst_list_btn)
-        layout.addLayout(h2)
 
         # --- 파일명 입력 라인 ---
         h3 = QHBoxLayout()
@@ -100,6 +84,11 @@ class ImageCopyApp(QMainWindow):
         h4.addWidget(self.files_input)
         # Enter 키 입력 시 run_copy 실행
         self.files_input.returnPressed.connect(self.run_copy)
+
+        # 이미지 선택 버튼
+        image_sel_btn = QPushButton("이미지 선택")
+        image_sel_btn.clicked.connect(self.select_src_files)
+        h4.addWidget(image_sel_btn)
 
         # 초기화 버튼
         clear_btn = QPushButton("초기화")
@@ -123,7 +112,7 @@ class ImageCopyApp(QMainWindow):
 
         # 파일 메뉴
         file_menu = menu_bar.addMenu("파일")
-        default_action = QAction("기본 경로 불러오기", self)
+        default_action = QAction("경로 초기화", self)
         template_action = QAction("PDF 템플릿 설정", self)
         close_action = QAction("닫기", self)
 
@@ -148,10 +137,7 @@ class ImageCopyApp(QMainWindow):
         info_menu.addAction(info_action)
 
         # 시그널 연결
-        self.src_btn.clicked.connect(self.choose_src_folder)
-        self.dst_btn.clicked.connect(self.choose_dst_folder)
         self.run_btn.clicked.connect(self.run_copy)
-        default_action.triggered.connect(self.load_default_config)
         close_action.triggered.connect(self.close)
 
         info_action.triggered.connect(self.show_version_dialog)
@@ -192,70 +178,63 @@ class ImageCopyApp(QMainWindow):
         if folder:
             self.dst_input.setText(folder)
 
-    # --- 기본 경로 불러오기 ---
-    def load_default_config(self):
-        config = load_previous_config()
-        if config:
-            self.src_input.setText(config.get("source_dir", DEFAULT_SRC))
-            self.dst_input.setText(config.get("target_dir", DEFAULT_DST))
-            self.files_input.setText(config.get("file_names", ""))
-            self.log("🟢 prevConfig.json 내용을 불러왔습니다")
-        else:
-            self.log("⚠️ prevConfig.json이 없습니다")
+    # 설정 창 열기
+    def open_path_dialog(self):
+        dlg = PathDialog(self)
+        if dlg.exec():  # 확인 버튼 클릭 시 True 반환
+            self.log("경로 설정 저장 완료!")
 
     # --- 초기 설정 (첫 실행) ---
-
     def initialize_config(self):
         if not os.path.exists("prevConfig.json"):
             # 알림창
             QMessageBox.information(
                 self,
-                "초기 설정 필요",
-                "prevConfig.json이 없습니다.\n초기 설정을 진행합니다.\n원본 폴더와 대상 폴더를 선택해주세요.",
+                "초기 설정",
+                "prevConfig.json이 없습니다.\n초기 설정을 진행합니다.\n원본 폴더,대상 폴더, pdf 템플릿을, 선택해주세요.\n이후에 재설정이 가능합니다.",
             )
 
             # 원본 폴더 선택
-            src_folder = QFileDialog.getExistingDirectory(
-                self, "원본 폴더 선택 (초기 설정)"
-            )
+            src_folder = QFileDialog.getExistingDirectory(self, "원본 폴더 선택 (초기 설정)")
             if not src_folder:
                 src_folder = DEFAULT_SRC
 
             # 대상 폴더 선택
-            dst_folder = QFileDialog.getExistingDirectory(
-                self, "대상 폴더 선택 (초기 설정)"
-            )
+            dst_folder = QFileDialog.getExistingDirectory(self, "대상 폴더 선택 (초기 설정)")
             if not dst_folder:
                 dst_folder = DEFAULT_DST
+
+            # 템플릿 선택
+            file_path, _ = QFileDialog.getOpenFileName(self, "템플릿 선택", "", "PDF Files (*.pdf)")
 
             # JSON 생성
             config = {
                 "source_dir": src_folder,
                 "target_dir": dst_folder,
+                "template_dir": file_path,
                 "file_names": "",
             }
             save_config(config)
             self.config = config
 
             # 입력창 반영
-            self.src_input.setText(src_folder)
-            self.dst_input.setText(dst_folder)
             self.files_input.setText("")
 
             self.log("🟢 초기 설정 완료: prevConfig.json 생성됨")
         else:
             self.config = load_previous_config()
-            self.src_input.setText(self.config.get("source_dir", DEFAULT_SRC))
-            self.dst_input.setText(self.config.get("target_dir", DEFAULT_DST))
+            # self.pdf_input.setText(self.config.get("template_dir", ""))
+            # self.src_input.setText(self.config.get("source_dir", DEFAULT_SRC))
+            # self.dst_input.setText(self.config.get("target_dir", DEFAULT_DST))
             self.files_input.setText(self.config.get("file_names", ""))
 
     # --- 복사 실행 ---
     def run_copy(self):
-        source = self.src_input.text()
-        target = self.dst_input.text()
-        file_names = [
-            s.strip() for s in self.files_input.text().split(",") if s.strip()
-        ]
+        self.config = load_previous_config()
+        source = self.config.get("source_dir", DEFAULT_SRC)
+        target = self.config.get("target_dir", DEFAULT_DST)
+        pdf = self.config.get("template_dir", "")
+        file_names = [s.strip() for s in self.files_input.text().split(",") if s.strip()]
         if not source or not target or not file_names:
             self.log("❌ 파일명을 입력해주세요.")
             return
@@ -265,6 +244,7 @@ class ImageCopyApp(QMainWindow):
             {
                 "source_dir": source,
                 "target_dir": target_path,
+                "template_dir": pdf,
                 "file_names": self.files_input.text(),
             }
         )
@@ -278,14 +258,16 @@ class ImageCopyApp(QMainWindow):
         try:
             append_log(sys.app_window.log_output, "❌ 예외 발생:\n" + tb_str)
         except Exception:
-            print("❌ 예외 발생:\n" + tb_str)
+            append_log("❌ 예외 발생:\n" + tb_str)
 
         # 원래 excepthook 호출
         sys.__excepthook__(exc_type, exc_value, exc_tb)
 
     # --- 원본 폴더 다중 파일 선택 ---
     def select_src_files(self):
-        folder = self.src_input.text()
+        self.config = load_previous_config()
+        folder = self.config.get("source_dir", DEFAULT_SRC)
+        print(folder)
         if not folder or not os.path.exists(folder):
             self.log("⚠️ 원본 폴더가 존재하지 않습니다")
             return
@@ -299,7 +281,8 @@ class ImageCopyApp(QMainWindow):
             self.log(f"🟢 {len(names)}개 파일 선택됨")
 
     def show_dst_files(self):
-        folder = self.dst_input.text()
+        self.config = load_previous_config()
+        folder = self.config.get("target_dir", DEFAULT_DST)
         if not folder or not os.path.exists(folder):
             self.log("⚠️ 대상 폴더가 존재하지 않습니다")
             return
@@ -373,17 +356,15 @@ class ImageCopyApp(QMainWindow):
         dialog.exec()
 
     def save_images_to_pdf_with_template(self):
-        folder = self.dst_input.text()
+        self.config = load_previous_config()
+        folder = self.config.get("target_dir", DEFAULT_DST)
         if not os.path.exists(folder):
-            print("❌ 대상 폴더가 존재하지 않습니다")
+            self.log("❌ 대상 폴더가 존재하지 않습니다")
             return
 
         def natural_sort_key(s):
             """문자열을 숫자와 문자로 분리하여 정렬"""
-            return [
-                int(text) if text.isdigit() else text.lower()
-                for text in re.split(r"(\d+)", s)
-            ]
+            return [int(text) if text.isdigit() else text.lower() for text in re.split(r"(\d+)", s)]
 
         files = [
             os.path.join(folder, f)
@@ -391,7 +372,7 @@ class ImageCopyApp(QMainWindow):
             if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif"))
         ]
         if not files:
-            print("❌ 대상 폴더에 이미지가 없습니다")
+            self.log("❌ 대상 폴더에 이미지가 없습니다")
             return
 
         # 저장 경로
@@ -401,10 +382,13 @@ class ImageCopyApp(QMainWindow):
             pdf_path = os.path.join(folder, f"이미지_모음_{counter}.pdf")
             counter += 1
 
-        print(f"🟢 PDF 생성 시작: {pdf_path}")
+        self.log(f"🟢 PDF 생성 시작: {pdf_path}")
 
         # 템플릿 첫 페이지 가져오기
-        template_path = "C:/Users/hong/Desktop/nextjs/copyImage/template.pdf"
+        template_path = self.config.get("template_dir", "")
+        if not template_path:
+            self.log("❌ 템플릿 경로가 없습니다.")
+            return
         template_reader = PdfReader(template_path)
         template_page = template_reader.pages[0]
 
@@ -434,10 +418,10 @@ class ImageCopyApp(QMainWindow):
             # 이미지별 위치 보정
             if idx_in_page == 0:  # 첫 번째 이미지
                 x_offset = 0  # 왼쪽 기본 위치 유지
-                y_offset = -20  # 아래로 이동
+                y_offset = -50  # 아래로 이동
             else:  # 두 번째 이미지
                 x_offset = 0
-                y_offset = 40  # 위로 이동
+                y_offset = 10  # 위로 이동
 
             try:
                 img = ImageReader(img_file)
@@ -464,7 +448,7 @@ class ImageCopyApp(QMainWindow):
         with open(pdf_path, "wb") as f:
             writer.write(f)
 
-        print(f"✅ PDF 저장 완료: {pdf_path}")
+        self.log(f"✅ PDF 저장 완료: {pdf_path}")
 
         # PDF가 저장된 폴더 열기
         if sys.platform == "win32":
@@ -475,7 +459,8 @@ class ImageCopyApp(QMainWindow):
             subprocess.Popen(["xdg-open", os.path.abspath(folder)])
 
     def save_images_to_pdf(self):
-        folder = self.dst_input.text()
+        self.config = load_previous_config()
+        folder = self.config.get("target_dir", DEFAULT_DST)
         if not folder or not os.path.exists(folder):
             self.log("❌ 대상 폴더가 존재하지 않습니다")
             return
@@ -485,16 +470,11 @@ class ImageCopyApp(QMainWindow):
             문자열을 숫자와 문자로 나눠서 정렬 가능하게 변환
             'image10.png' -> ['image', 10, '.png']
             """
-            return [
-                int(text) if text.isdigit() else text.lower()
-                for text in re.split(r"(\d+)", s)
-            ]
+            return [int(text) if text.isdigit() else text.lower() for text in re.split(r"(\d+)", s)]
 
         files = [
             os.path.join(folder, f)
-            for f in sorted(
-                os.listdir(folder), key=natural_sort_key
-            )  # natural sort 적용
+            for f in sorted(os.listdir(folder), key=natural_sort_key)  # natural sort 적용
             if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif"))
         ]
 

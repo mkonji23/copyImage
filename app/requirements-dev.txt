@@ -2,3 +2,4 @@ pytest
 PySide6
 reportlab
 flake8
+PyPDF2
