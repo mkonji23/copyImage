@@ -1,3 +1,4 @@
+from copy import deepcopy
 import os
 import re
 import subprocess
@@ -7,6 +8,8 @@ from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
+from PyPDF2 import PdfReader, PdfWriter
+import io
 
 from config import DEFAULT_DST, DEFAULT_SRC, load_previous_config, save_config
 from copy_utils import copy_images
@@ -63,7 +66,7 @@ class ImageCopyApp(QMainWindow):
         self.log_output.setReadOnly(True)
         # 출력버튼
         self.pdf_btn = QPushButton("PDF로 저장")
-        self.pdf_btn.clicked.connect(self.save_images_to_pdf)
+        self.pdf_btn.clicked.connect(self.save_images_to_pdf_with_template)
 
         layout = QVBoxLayout()
 
@@ -121,9 +124,11 @@ class ImageCopyApp(QMainWindow):
         # 파일 메뉴
         file_menu = menu_bar.addMenu("파일")
         default_action = QAction("기본 경로 불러오기", self)
+        template_action = QAction("PDF 템플릿 설정", self)
         close_action = QAction("닫기", self)
 
         file_menu.addAction(default_action)
+        file_menu.addAction(template_action)
         file_menu.addAction(close_action)
 
         # 설정 메뉴
@@ -367,7 +372,108 @@ class ImageCopyApp(QMainWindow):
 
         dialog.exec()
 
-    # image를 pdf로
+    def save_images_to_pdf_with_template(self):
+        folder = self.dst_input.text()
+        if not os.path.exists(folder):
+            print("❌ 대상 폴더가 존재하지 않습니다")
+            return
+
+        def natural_sort_key(s):
+            """문자열을 숫자와 문자로 분리하여 정렬"""
+            return [
+                int(text) if text.isdigit() else text.lower()
+                for text in re.split(r"(\d+)", s)
+            ]
+
+        files = [
+            os.path.join(folder, f)
+            for f in sorted(os.listdir(folder), key=natural_sort_key)
+            if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif"))
+        ]
+        if not files:
+            print("❌ 대상 폴더에 이미지가 없습니다")
+            return
+
+        # 저장 경로
+        pdf_path = os.path.join(folder, "이미지_모음.pdf")
+        counter = 1
+        while os.path.exists(pdf_path):
+            pdf_path = os.path.join(folder, f"이미지_모음_{counter}.pdf")
+            counter += 1
+
+        print(f"🟢 PDF 생성 시작: {pdf_path}")
+
+        # 템플릿 첫 페이지 가져오기
+        template_path = "C:/Users/hong/Desktop/nextjs/copyImage/template.pdf"
+        template_reader = PdfReader(template_path)
+        template_page = template_reader.pages[0]
+
+        writer = PdfWriter()
+
+        # A4 기준
+        page_w, page_h = A4
+        cols, rows = 1, 2  # 왼쪽 열만 사용, 2행
+        h_margin = 20  # 왼쪽 여백 전체
+        v_margin = 10  # 위/아래 여백
+        img_w = (page_w * 0.5) - 2 * h_margin
+        img_h = (page_h - (2 + 1) * v_margin) / 2  # 2행 기준
+
+        for i, img_file in enumerate(files):
+            idx_in_page = i % 2  # 한 페이지 2장
+
+            # 새 페이지 시작
+            if idx_in_page == 0:
+                packet = io.BytesIO()
+                c = canvas.Canvas(packet, pagesize=A4)
+
+            col = 0
+            row = idx_in_page
+            x = h_margin  # 왼쪽 기본 위치
+            y = page_h - v_margin - (row + 1) * img_h - row * v_margin
+
+            # 이미지별 위치 보정
+            if idx_in_page == 0:  # 첫 번째 이미지
+                x_offset = 0  # 왼쪽 기본 위치 유지
+                y_offset = -20  # 아래로 이동
+            else:  # 두 번째 이미지
+                x_offset = 0
+                y_offset = 40  # 위로 이동
+
+            try:
+                img = ImageReader(img_file)
+                iw, ih = img.getSize()
+                ratio = min(img_w / iw, img_h / ih)
+                draw_w = iw * ratio
+                draw_h = ih * ratio
+                draw_x = x + (img_w - draw_w) / 2 + x_offset
+                draw_y = y + (img_h - draw_h) / 2 + y_offset
+                c.drawImage(img, draw_x, draw_y, width=draw_w, height=draw_h)
+            except Exception as e:
+                print(f"⚠️ 이미지 삽입 실패: {img_file} ({e})")
+
+            # 페이지 저장
+            if idx_in_page == 1 or i == len(files) - 1:
+                c.save()
+                packet.seek(0)
+                overlay_pdf = PdfReader(packet)
+                base_page = deepcopy(template_page)
+                base_page.merge_page(overlay_pdf.pages[0])
+                writer.add_page(base_page)
+
+        # 최종 저장
+        with open(pdf_path, "wb") as f:
+            writer.write(f)
+
+        print(f"✅ PDF 저장 완료: {pdf_path}")
+
+        # PDF가 저장된 폴더 열기
+        if sys.platform == "win32":
+            subprocess.Popen(f'explorer "{os.path.abspath(folder)}"')
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", os.path.abspath(folder)])
+        elif sys.platform == "linux":
+            subprocess.Popen(["xdg-open", os.path.abspath(folder)])
+
     def save_images_to_pdf(self):
         folder = self.dst_input.text()
         if not folder or not os.path.exists(folder):

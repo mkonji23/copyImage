@@ -1,0 +1,12 @@
+# PyInstaller 빌드 결과
+/dist
+/build
+app/dist
+app/build
+app/__pycache__
+app/app.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
