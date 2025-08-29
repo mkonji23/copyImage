@@ -38,7 +38,6 @@ class ImageCopyApp(QMainWindow):
         self.setWindowTitle("이미지 파일 복사기")
         self.resize(500, 450)
 
-
         if getattr(sys, "frozen", False):
             # onefile 실행 시 임시 폴더
             base_path = sys._MEIPASS
@@ -66,9 +65,8 @@ class ImageCopyApp(QMainWindow):
         self.pdf_btn = QPushButton("PDF로 저장")
         self.pdf_btn.clicked.connect(self.save_images_to_pdf)
 
-
         layout = QVBoxLayout()
-        
+
         layout.addWidget(QLabel("원본 폴더:"))
         h1 = QHBoxLayout()
         h1.addWidget(self.src_input)
@@ -93,11 +91,11 @@ class ImageCopyApp(QMainWindow):
 
         # input, 초기화 버튼
         h4 = QHBoxLayout()
-        
+
         # input
         self.files_input = QLineEdit()
         h4.addWidget(self.files_input)
-         # Enter 키 입력 시 run_copy 실행
+        # Enter 키 입력 시 run_copy 실행
         self.files_input.returnPressed.connect(self.run_copy)
 
         # 초기화 버튼
@@ -132,11 +130,11 @@ class ImageCopyApp(QMainWindow):
         config_menu = menu_bar.addMenu("설정")
         self.explorer_action = QAction("복사 후 폴더 띄우기", self)
         self.explorer_action.setCheckable(True)  # 체크박스처럼 만들기
-        self.explorer_action.setChecked(True)    # 기본 체크 여부
+        self.explorer_action.setChecked(True)  # 기본 체크 여부
 
         # 체크 상태 변경 시 로그 찍기
         self.explorer_action.toggled.connect(self.on_explorer_toggled)
-        
+
         config_menu.addAction(self.explorer_action)
 
         # 오른쪽 끝에 띄우기 위해 스페이서 위젯
@@ -173,6 +171,7 @@ class ImageCopyApp(QMainWindow):
 
     def clear_input(self):
         self.files_input.clear()
+
     # --- 로그 ---
     def log(self, message):
         append_log(self.log_output, message)
@@ -273,11 +272,11 @@ class ImageCopyApp(QMainWindow):
         tb_str = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
         try:
             append_log(sys.app_window.log_output, "❌ 예외 발생:\n" + tb_str)
-        except:
+        except Exception:
             print("❌ 예외 발생:\n" + tb_str)
-        sys.__excepthook__(exc_type, exc_value, exc_tb)
 
-    sys.excepthook = excepthook
+        # 원래 excepthook 호출
+        sys.__excepthook__(exc_type, exc_value, exc_tb)
 
     # --- 원본 폴더 다중 파일 선택 ---
     def select_src_files(self):
@@ -367,22 +366,29 @@ class ImageCopyApp(QMainWindow):
         layout.addWidget(close_btn)
 
         dialog.exec()
-    # image를 pdf로 
+
+    # image를 pdf로
     def save_images_to_pdf(self):
         folder = self.dst_input.text()
         if not folder or not os.path.exists(folder):
             self.log("❌ 대상 폴더가 존재하지 않습니다")
             return
+
         def natural_sort_key(s):
             """
             문자열을 숫자와 문자로 나눠서 정렬 가능하게 변환
             'image10.png' -> ['image', 10, '.png']
             """
-            return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s)]
+            return [
+                int(text) if text.isdigit() else text.lower()
+                for text in re.split(r"(\d+)", s)
+            ]
 
         files = [
             os.path.join(folder, f)
-            for f in sorted(os.listdir(folder), key=natural_sort_key)  # natural sort 적용
+            for f in sorted(
+                os.listdir(folder), key=natural_sort_key
+            )  # natural sort 적용
             if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif"))
         ]
 
@@ -419,7 +425,7 @@ class ImageCopyApp(QMainWindow):
                 c.showPage()  # 새 페이지
 
             col = idx_in_page // 3  # 0:A열, 1:B열
-            row = idx_in_page % 3   # 0~2
+            row = idx_in_page % 3  # 0~2
 
             x = h_margin + col * (img_w + h_margin)
             y = page_h - v_margin - (row + 1) * img_h - row * v_margin
@@ -446,6 +452,8 @@ class ImageCopyApp(QMainWindow):
             subprocess.Popen(["open", os.path.abspath(folder)])
         elif sys.platform == "linux":
             subprocess.Popen(["xdg-open", os.path.abspath(folder)])
+
+
 # --- 실행 ---
 if __name__ == "__main__":
     app = QApplication(sys.argv)
