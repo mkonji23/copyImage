@@ -5,6 +5,7 @@ app/dist
 app/build
 app/__pycache__
 app/app.log
+app/prevConfig.json
 
 # Python cache
 __pycache__/
