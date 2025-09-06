@@ -1,6 +1,14 @@
 {
-  "source_dir": "C:/Users/honghong/Desktop/dev/genereateImg/images",
-  "target_dir": "C:\\Users\\honghong\\Desktop\\새 폴더",
-  "template_dir": "C:/Users/honghong/Desktop/dev/copyImage/template.pdf",
-  "file_names": "img_1, img_2, img_3, img_4, img_5, img_6, img_7"
+  "source_dir": "C:/Users/paul/Desktop/오답노트",
+  "target_dir": "C:\\Users\\paul\\Desktop\\오답노트2",
+  "template_dir": "C:/Users/paul/Desktop/dev/파이썬qt/app/template.pdf",
+  "file_names": "5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22",
+  "h_margin": 10,
+  "v_margin": 200,
+  "target_w": 300,
+  "target_h": 160,
+  "x_offset1": -10,
+  "y_offset1": 20,
+  "x_offset2": -10,
+  "y_offset2": 0
 }
