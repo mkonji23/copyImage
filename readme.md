@@ -2,7 +2,10 @@
 
 ```
 cd app
-
+## 가상환경 진입
+.\venv\Scripts\Activate
+cd ..
+start zipBat.bat
 @echo off
 :: 1. PyInstaller 빌드
 pyinstaller --noconsole --onefile --icon=resources/icon.ico main.py
