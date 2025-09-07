@@ -1,4 +1,8 @@
+import os
+import traceback
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QFormLayout,QLabel, QFrame
+from log_utils import append_log
+from preview_dialog import PreviewDialog
 from config import load_previous_config, save_config
 
 class DialogPdfConfig(QDialog):
@@ -12,7 +16,9 @@ class DialogPdfConfig(QDialog):
 
         layout = QVBoxLayout()
         form = QFormLayout()
-
+        preview_btn = QPushButton("미리보기")
+        preview_btn.clicked.connect(self.show_preview)
+        layout.addWidget(preview_btn)
         # 🔹 불러온 값 or 기본값 세팅
         self.h_margin_input = QLineEdit(str(self.prev_config.get("h_margin", 20)))
         self.v_margin_input = QLineEdit(str(self.prev_config.get("v_margin", 30)))
@@ -70,10 +76,41 @@ class DialogPdfConfig(QDialog):
             "y_offset1": int(self.target_y_offset1.text()),
             "x_offset2": int(self.target_x_offset2.text()),
             "y_offset2": int(self.target_y_offset2.text()),
-            
-
-
-
         }
         save_config(new_config)  # ✅ 파일에 저장
         self.accept()
+        
+    def show_preview(self):
+        try:
+            cfg = {
+                "h_margin": int(self.h_margin_input.text()),
+                "v_margin": int(self.v_margin_input.text()),
+                "target_w": int(self.target_w_input.text()),
+                "target_h": int(self.target_h_input.text()),
+                "x_offset1": int(self.target_x_offset1.text()),
+                "y_offset1": int(self.target_y_offset1.text()),
+                "x_offset2": int(self.target_x_offset2.text()),
+                "y_offset2": int(self.target_y_offset2.text()),
+            }
+
+            folder = self.prev_config.get("target_dir", "")
+            template_path = self.prev_config.get("template_dir", "")
+            if not folder:
+                raise ValueError("📂 대상 폴더(target_dir)가 설정되지 않았습니다.")
+            if not template_path:
+                raise ValueError("📑 템플릿 파일(template_dir)이 지정되지 않았습니다.")
+
+            sample_images = [
+                os.path.join(folder, f)
+                for f in os.listdir(folder)
+                if f.lower().endswith((".jpg", ".png"))
+            ]
+            if not sample_images:
+                raise FileNotFoundError("❌ 대상 폴더에 JPG/PNG 이미지가 없습니다.")
+
+            dlg = PreviewDialog(cfg, sample_images, template_path, self)
+            dlg.exec()
+
+        except Exception as e:
+            error_msg = f"⚠️ 미리보기 생성 실패: {e}\n{traceback.format_exc()}"
+            append_log(self.parent().log_output, error_msg)
