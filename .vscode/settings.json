@@ -4,6 +4,6 @@
   "python.linting.ruffArgs": ["--fix"],
   "python.formatting.provider": "none",
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "ms-python.black-formatter",
+  "editor.defaultFormatter": "charliermarsh.ruff",
   "editor.fontFamily": "Hack , Hack NF, 'Courier New', monospace"
 }

@@ -11,6 +11,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from PyPDF2 import PdfReader, PdfWriter
 import io
+
 # ✅ ConfigDialog는 이미 따로 정의되어 있다고 가정
 from dialog_pdf_config import DialogPdfConfig  # <- 따로 만든 클래스 import
 from config import DEFAULT_DST, DEFAULT_SRC, load_previous_config, save_config
@@ -65,7 +66,7 @@ class ImageCopyApp(QMainWindow):
         layout.addWidget(self.path_config_btn)
 
         self.files_input = QLineEdit()
-        self.run_btn = QPushButton("복사 실행(Enter)")
+        self.run_btn = QPushButton("pdf 폴더 열기")
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
         # 설정
@@ -85,8 +86,8 @@ class ImageCopyApp(QMainWindow):
         # input
         self.files_input = QLineEdit()
         h4.addWidget(self.files_input)
-        # Enter 키 입력 시 run_copy 실행
-        self.files_input.returnPressed.connect(self.run_copy)
+        # Enter 키 입력 시 pdf 실행
+        self.files_input.returnPressed.connect(self.save_images_to_pdf_with_template)
 
         # 이미지 선택 버튼
         image_sel_btn = QPushButton("이미지 선택")
@@ -105,7 +106,7 @@ class ImageCopyApp(QMainWindow):
         h5.addWidget(self.run_btn)
         layout.addLayout(h5)
         # pdf버튼
-             # h5 로그
+        # h5 로그
         h6 = QHBoxLayout()
         layout.addLayout(h6)
         h6.addWidget(self.btn_pdf_setting)
@@ -128,15 +129,6 @@ class ImageCopyApp(QMainWindow):
         file_menu.addAction(close_action)
 
         # 설정 메뉴
-        config_menu = menu_bar.addMenu("설정")
-        self.explorer_action = QAction("복사 후 폴더 띄우기", self)
-        self.explorer_action.setCheckable(True)  # 체크박스처럼 만들기
-        self.explorer_action.setChecked(True)  # 기본 체크 여부
-
-        # 체크 상태 변경 시 로그 찍기
-        self.explorer_action.toggled.connect(self.on_explorer_toggled)
-
-        config_menu.addAction(self.explorer_action)
 
         # 오른쪽 끝에 띄우기 위해 스페이서 위젯
         info_menu = menu_bar.addMenu("정보")
@@ -144,7 +136,7 @@ class ImageCopyApp(QMainWindow):
         info_menu.addAction(info_action)
 
         # 시그널 연결
-        self.run_btn.clicked.connect(self.run_copy)
+        self.run_btn.clicked.connect(self.open_folder)
         close_action.triggered.connect(self.close)
 
         info_action.triggered.connect(self.show_version_dialog)
@@ -155,18 +147,18 @@ class ImageCopyApp(QMainWindow):
         # prevConfig.json 없으면 초기 설정
         self.initialize_config()
 
-            
-    # 콜백 함수
-    def on_explorer_toggled(self, checked: bool):
-        if checked:
-            self.log("✅ 폴더 띄우기 옵션 체크됨")
-        else:
-            self.log("❌ 폴더 띄우기 옵션 체크 해제됨")
+    # 닫기 이벤트
+    def closeEvent(self, event):
+        print("닫기 버튼 눌림!")
+        self.save_local_config
+        # event.accept()  # 닫기 허용
+        # event.ignore()  # 닫기 막기
+        event.accept()  # 보통 닫기 허용
 
     # 키 이벤트 재정의
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            self.run_copy()
+            self.open_folder()
 
     def clear_input(self):
         self.files_input.clear()
@@ -192,12 +184,12 @@ class ImageCopyApp(QMainWindow):
         if dlg.exec():  # 확인 버튼 클릭 시 True 반환
             self.log("경로 설정 저장 완료!")
 
-    
     def open_config_dialog(self):
         dialog = DialogPdfConfig(self)
         if dialog.exec():  # OK 눌렀을 때만
             # ✅ 업데이트된 값 가져오기
             self.log("pdf 설정  완료!")
+
     # --- 초기 설정 (첫 실행) ---
     def initialize_config(self):
         if not os.path.exists("prevConfig.json"):
@@ -209,17 +201,23 @@ class ImageCopyApp(QMainWindow):
             )
 
             # 원본 폴더 선택
-            src_folder = QFileDialog.getExistingDirectory(self, "원본 폴더 선택 (초기 설정)")
+            src_folder = QFileDialog.getExistingDirectory(
+                self, "원본 폴더 선택 (초기 설정)"
+            )
             if not src_folder:
                 src_folder = DEFAULT_SRC
 
             # 대상 폴더 선택
-            dst_folder = QFileDialog.getExistingDirectory(self, "대상 폴더 선택 (초기 설정)")
+            dst_folder = QFileDialog.getExistingDirectory(
+                self, "대상 폴더 선택 (초기 설정)"
+            )
             if not dst_folder:
                 dst_folder = DEFAULT_DST
 
             # 템플릿 선택
-            file_path, _ = QFileDialog.getOpenFileName(self, "템플릿 선택", "", "PDF Files (*.pdf)")
+            file_path, _ = QFileDialog.getOpenFileName(
+                self, "템플릿 선택", "", "PDF Files (*.pdf)"
+            )
 
             # JSON 생성
             config = {
@@ -242,18 +240,21 @@ class ImageCopyApp(QMainWindow):
             # self.dst_input.setText(self.config.get("target_dir", DEFAULT_DST))
             self.files_input.setText(self.config.get("file_names", ""))
 
-    # --- 복사 실행 ---
-    def run_copy(self):
+    # --- 폴더 열기 ---
+    def open_folder(self):
+        self.config = load_previous_config()
+        target = self.config.get("target_dir", DEFAULT_DST)
+        target_path = os.path.abspath(target)
+        subprocess.Popen(f'explorer "{target_path}"')
+
+    # --- 현재 세팅 저장 ---
+    def save_local_config(self):
         self.config = load_previous_config()
         source = self.config.get("source_dir", DEFAULT_SRC)
         target = self.config.get("target_dir", DEFAULT_DST)
         pdf = self.config.get("template_dir", "")
-        file_names = [s.strip() for s in self.files_input.text().split(",") if s.strip()]
-        if not source or not target or not file_names:
-            self.log("❌ 파일명을 입력해주세요.")
-            return
-        copy_images(file_names, source, target, self.log)
         target_path = os.path.abspath(target)
+
         save_config(
             {
                 "source_dir": source,
@@ -262,9 +263,6 @@ class ImageCopyApp(QMainWindow):
                 "file_names": self.files_input.text(),
             }
         )
-        if self.explorer_action.isChecked() and sys.platform == "win32":
-            subprocess.Popen(f'explorer "{target_path}"')
-        self.log("✅ 작업 완료!")
 
     # --- 전역 예외 처리 ---
     def excepthook(exc_type, exc_value, exc_tb):
@@ -371,25 +369,44 @@ class ImageCopyApp(QMainWindow):
 
     def save_images_to_pdf_with_template(self):
         self.config = load_previous_config()
+        source_dir = self.config.get(
+            "source_dir", ""
+        )  # 또는 self.files_input_dir.text()
+        input_files = [
+            f.strip() for f in self.files_input.text().split(",") if f.strip()
+        ]
+
+        # 허용할 이미지 확장자
+        allowed_exts = (".jpg", ".jpeg", ".png", ".bmp", ".gif")
+
+        files = []
+        for f in input_files:
+            found = False
+            # 파일 이름에 확장자가 이미 있으면 그대로 체크
+            if os.path.splitext(f)[1].lower() in allowed_exts:
+                full_path = os.path.join(source_dir, f)
+                if os.path.isfile(full_path):
+                    files.append(full_path)
+                    found = True
+            else:
+                # 확장자가 없으면 allowed_exts 순서대로 붙여서 체크
+                for ext in allowed_exts:
+                    full_path = os.path.join(source_dir, f + ext)
+                    if os.path.isfile(full_path):
+                        files.append(full_path)
+                        found = True
+                        break
+            if not found:
+                self.log(f"파일 없음: {f}")
+
+        if not files:
+            self.log("❌ 유효한 이미지 파일이 없습니다")
+            return
+        # 저장 경로
         folder = self.config.get("target_dir", DEFAULT_DST)
         if not os.path.exists(folder):
-            self.log("❌ 대상 폴더가 존재하지 않습니다")
-            return
+            os.makedirs(folder)
 
-        def natural_sort_key(s):
-            """문자열을 숫자와 문자로 분리하여 정렬"""
-            return [int(text) if text.isdigit() else text.lower() for text in re.split(r"(\d+)", s)]
-
-        files = [
-            os.path.join(folder, f)
-            for f in sorted(os.listdir(folder), key=natural_sort_key)
-            if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif"))
-        ]
-        if not files:
-            self.log("❌ 대상 폴더에 이미지가 없습니다")
-            return
-
-        # 저장 경로
         pdf_path = os.path.join(folder, "이미지_모음.pdf")
         counter = 1
         while os.path.exists(pdf_path):
@@ -400,7 +417,7 @@ class ImageCopyApp(QMainWindow):
 
         # 템플릿 첫 페이지 가져오기
         template_path = self.config.get("template_dir", "")
-        if not template_path:
+        if not template_path or not os.path.isfile(template_path):
             self.log("❌ 템플릿 경로가 없습니다.")
             return
         template_reader = PdfReader(template_path)
@@ -413,42 +430,35 @@ class ImageCopyApp(QMainWindow):
         cfg = self.config
         h_margin = cfg.get("h_margin", 20)
         v_margin = cfg.get("v_margin", 30)
-        # 🔹 고정 이미지 박스 크기 (원하는 값으로 수정 가능)
         target_w = cfg.get("target_w", 300)
         target_h = cfg.get("target_h", 160)
         img_h = (page_h - (2 + 1) * v_margin) / 2  # 2행 기준
-        
 
         for i, img_file in enumerate(files):
             idx_in_page = i % 2  # 한 페이지 2장
 
-            # 새 페이지 시작
             if idx_in_page == 0:
                 packet = io.BytesIO()
                 c = canvas.Canvas(packet, pagesize=A4)
 
             row = idx_in_page
-            x = h_margin  # 왼쪽 기본 위치
+            x = h_margin
             y = page_h - v_margin - (row + 1) * img_h - row * v_margin
 
-            # 이미지별 위치 보정
-            if idx_in_page == 0:  # 첫 번째 이미지
-                x_offset = cfg.get("x_offset1", 0)  # 왼쪽 기본 위치 유지
-                y_offset = cfg.get("y_offset1", -50) # 아래로 이동
-            else:  # 두 번째 이미지
-                x_offset = cfg.get("x_offset2", 0)  # 왼쪽 기본 위치 유지
-                y_offset = cfg.get("y_offset2", 10) # 아래로 이동
+            if idx_in_page == 0:
+                x_offset = cfg.get("x_offset1", 0)
+                y_offset = cfg.get("y_offset1", -50)
+            else:
+                x_offset = cfg.get("x_offset2", 0)
+                y_offset = cfg.get("y_offset2", 10)
 
             try:
                 img = ImageReader(img_file)
                 iw, ih = img.getSize()
-
-                # 비율 유지해서 target 박스 안에 맞춤
                 ratio = min(target_w / iw, target_h / ih)
                 draw_w = iw * ratio
                 draw_h = ih * ratio
 
-                # 박스 안에서 가운데 정렬 + 오프셋 적용
                 draw_x = x + (target_w - draw_w) / 2 + x_offset
                 draw_y = y + (target_h - draw_h) / 2 + y_offset
 
@@ -456,7 +466,6 @@ class ImageCopyApp(QMainWindow):
             except Exception as e:
                 print(f"⚠️ 이미지 삽입 실패: {img_file} ({e})")
 
-            # 페이지 저장
             if idx_in_page == 1 or i == len(files) - 1:
                 c.save()
                 packet.seek(0)
@@ -465,19 +474,19 @@ class ImageCopyApp(QMainWindow):
                 base_page.merge_page(overlay_pdf.pages[0])
                 writer.add_page(base_page)
 
-        # 최종 저장
         with open(pdf_path, "wb") as f:
             writer.write(f)
 
+        self.save_local_config
         self.log(f"✅ PDF 저장 완료: {pdf_path}")
 
-        # PDF가 저장된 폴더 열기
+        # PDF 열기
         if sys.platform == "win32":
-            subprocess.Popen(f'explorer "{os.path.abspath(folder)}"')
+            os.startfile(pdf_path)
         elif sys.platform == "darwin":
-            subprocess.Popen(["open", os.path.abspath(folder)])
+            subprocess.Popen(["open", pdf_path])
         elif sys.platform == "linux":
-            subprocess.Popen(["xdg-open", os.path.abspath(folder)])
+            subprocess.Popen(["xdg-open", pdf_path])
 
 
 # --- 실행 ---
