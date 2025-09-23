@@ -22,6 +22,13 @@ pause
 
 ```
 cd app
+# 가상환경진입
+python -m venv venv
+# 가상환경 실행
+.\venv\Scripts\Activate
+# 설치
+pip install -r requirements.txt
+# 실행
 python main.py
 ```
 
