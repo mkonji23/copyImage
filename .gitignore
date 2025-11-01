@@ -11,3 +11,6 @@ app/prevConfig.json
 __pycache__/
 *.py[cod]
 *$py.class
+
+app/venv
+app/main.spec
