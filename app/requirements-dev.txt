@@ -3,3 +3,4 @@ PySide6
 reportlab
 flake8
 PyPDF2
+openpyxl==3.1.7
