@@ -2,17 +2,40 @@
   "source_dir": "C:/Users/paul/Desktop/오답노트",
   "target_dir": "C:\\Users\\paul\\Desktop\\오답노트2",
   "template_dir": "C:/Users/paul/Desktop/dev/파이썬qt/app/template.pdf",
-  "file_names": "5, 6, 7",
+  "file_names": "5",
   "users": [
     {
       "name": "dfdfdf122",
       "note_title": "2222",
+      "note_numbers": "5"
+    },
+    {
+      "name": "test1234",
+      "note_title": "test1",
       "note_numbers": "5,6,7"
     },
     {
-      "name": "test123",
-      "note_title": "test1",
-      "note_numbers": "5,6,7"
+      "name": "하정",
+      "note_title": "테스트1",
+      "note_numbers": "1,2,3,4"
+    },
+    {
+      "name": "하정",
+      "note_title": "테스트2",
+      "note_numbers": "34"
+    },
+    {
+      "name": "하정",
+      "note_title": "하정",
+      "note_numbers": "1,2,3,4"
     }
-  ]
+  ],
+  "h_margin": 20,
+  "v_margin": 20,
+  "target_w": 300,
+  "target_h": 160,
+  "x_offset1": -5,
+  "y_offset1": -50,
+  "x_offset2": 0,
+  "y_offset2": 10
 }
