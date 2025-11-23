@@ -351,10 +351,11 @@ class WrongAnswerManager(QMainWindow):
         self.modified = False
 
     def on_cell_click_row(self, row, col):
-        if col != 0:
-            checkbox = self.table.cellWidget(row, 0).findChild(QCheckBox)
-            if checkbox:
-                checkbox.setChecked(not checkbox.isChecked())
+        # col == 0 인 체크박스 열만 클릭에 반응하도록 수정
+        # QCheckBox 위젯은 자체적으로 클릭 이벤트를 처리하므로,
+        # 다른 열을 클릭했을 때 체크박스 상태를 변경하는 기존 로직을 제거합니다.
+        if col == 0:
+            pass
 
     # -------------------- 데이터 관리 --------------------
     def add_row(self):
