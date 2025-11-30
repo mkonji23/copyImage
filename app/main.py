@@ -246,6 +246,7 @@ class WrongAnswerManager(QMainWindow):
                     if checkbox:
                         checkbox.setCheckState(check_state)
 
+    # 전체체크
     def update_select_all_state(self):
         visible_rows = [r for r in range(self.table.rowCount()) if not self.table.isRowHidden(r)]
         if not visible_rows:
@@ -301,7 +302,7 @@ class WrongAnswerManager(QMainWindow):
             self.table.setRowHidden(row, not match)
 
         self.update_row_count()
-        self.update_select_all_state() # 필터링 후 전체 선택 체크박스 상태 업데이트
+        self.update_select_all_state()  # 필터링 후 전체 선택 체크박스 상태 업데이트
 
     # -------------------- 테이블 관리 --------------------
     def load_table(self, from_config=True):
@@ -323,14 +324,14 @@ class WrongAnswerManager(QMainWindow):
         self.clear_modified_marks()
         self.filter_table()  # 필터 적용
         self.update_row_count()
-        self.update_select_all_state() # 테이블 로드 후 전체 선택 체크박스 상태 업데이트
+        self.update_select_all_state()  # 테이블 로드 후 전체 선택 체크박스 상태 업데이트
 
     def add_table_row(self, user=None):
         row = self.table.rowCount()
         self.table.insertRow(row)
 
         checkbox = QCheckBox()
-        checkbox.stateChanged.connect(self.update_select_all_state) # 개별 체크박스 시그널 연결
+        checkbox.stateChanged.connect(self.update_select_all_state)  # 개별 체크박스 시그널 연결
         w = QWidget()
         l = QHBoxLayout(w)
         l.addWidget(checkbox)
