@@ -34,10 +34,10 @@ from config import (
     load_previous_config,
     save_config,
 )
-from dialog_pdf_config import DialogPdfConfig
-from dialogs import PathDialog
-from log_utils import append_log
-from pdf_generator import save_images_to_pdf_for_dialog_users
+from ui.dialogs.pdf_config_dialog import DialogPdfConfig
+from ui.dialogs.dialogs import PathDialog
+from utils.log_utils import append_log
+from services.pdf_generator import save_images_to_pdf_for_dialog_users
 
 
 class WrongAnswerManager(QMainWindow):
@@ -78,7 +78,16 @@ class WrongAnswerManager(QMainWindow):
         # --- 검색 ---
         self.setup_search_ui(main_layout)
 
-        # --- 테이블 ---
+        # --- 테이블 및 전체 선택 체크박스 ---
+        self.select_all_checkbox = QCheckBox("전체 선택")
+        self.select_all_checkbox.setToolTip("보이는 모든 항목을 선택/해제합니다.")
+        checkbox_layout = QHBoxLayout()
+        checkbox_layout.addWidget(self.select_all_checkbox)
+        checkbox_layout.addStretch()
+        # 체크박스 열(0)의 너비(40)와 여백(10)을 고려하여 왼쪽 마진 설정
+        checkbox_layout.setContentsMargins(10, 0, 0, 5)
+        main_layout.addLayout(checkbox_layout)
+
         self.table = QTableWidget(0, 4)
         self.setup_table()
         main_layout.addWidget(self.table)
@@ -195,6 +204,7 @@ class WrongAnswerManager(QMainWindow):
         self.search_input.returnPressed.connect(self.filter_table)
         self.search_input.textChanged.connect(lambda: self.search_timer.start(100))
         self.search_column_combo.currentIndexChanged.connect(self.filter_table)
+        self.select_all_checkbox.stateChanged.connect(self.toggle_all_checkboxes)
 
     def log(self, message):
         append_log(self.log_output, message)
@@ -216,9 +226,52 @@ class WrongAnswerManager(QMainWindow):
 
         self.row_count_label.setText(text)
         if log_this_update:
-            self.log(f"그리드 업데이트: {text}")
+            self.log(f"검색어: '{self.search_input.text()}' 로 검색 : {text}")
 
         self.is_first_update = False
+
+    # -------------------- 체크박스 관리 --------------------
+    def toggle_all_checkboxes(self, state):
+        # 사용자가 '전체 선택'을 클릭했을 때만 작동 (프로그램에 의한 변경은 무시)
+        if self.select_all_checkbox.isTristate():
+            return
+
+        check_state = Qt.CheckState(state)
+        for row in range(self.table.rowCount()):
+            # 보이는 행에 대해서만 체크박스 상태 변경
+            if not self.table.isRowHidden(row):
+                widget = self.table.cellWidget(row, 0)
+                if widget:
+                    checkbox = widget.findChild(QCheckBox)
+                    if checkbox:
+                        checkbox.setCheckState(check_state)
+
+    def update_select_all_state(self):
+        visible_rows = [r for r in range(self.table.rowCount()) if not self.table.isRowHidden(r)]
+        if not visible_rows:
+            self.select_all_checkbox.setCheckState(Qt.Unchecked)
+            return
+
+        checked_count = 0
+        for row in visible_rows:
+            widget = self.table.cellWidget(row, 0)
+            if widget:
+                checkbox = widget.findChild(QCheckBox)
+                if checkbox and checkbox.isChecked():
+                    checked_count += 1
+
+        # 시그널 루프 방지를 위해 상태 변경 전 시그널 블락
+        self.select_all_checkbox.blockSignals(True)
+        if checked_count == 0:
+            self.select_all_checkbox.setTristate(False)
+            self.select_all_checkbox.setCheckState(Qt.Unchecked)
+        elif checked_count == len(visible_rows):
+            self.select_all_checkbox.setTristate(False)
+            self.select_all_checkbox.setCheckState(Qt.Checked)
+        else:
+            self.select_all_checkbox.setTristate(True)
+            self.select_all_checkbox.setCheckState(Qt.PartiallyChecked)
+        self.select_all_checkbox.blockSignals(False)
 
     # -------------------- 검색 --------------------
     def filter_table(self):
@@ -248,6 +301,7 @@ class WrongAnswerManager(QMainWindow):
             self.table.setRowHidden(row, not match)
 
         self.update_row_count()
+        self.update_select_all_state() # 필터링 후 전체 선택 체크박스 상태 업데이트
 
     # -------------------- 테이블 관리 --------------------
     def load_table(self, from_config=True):
@@ -269,12 +323,14 @@ class WrongAnswerManager(QMainWindow):
         self.clear_modified_marks()
         self.filter_table()  # 필터 적용
         self.update_row_count()
+        self.update_select_all_state() # 테이블 로드 후 전체 선택 체크박스 상태 업데이트
 
     def add_table_row(self, user=None):
         row = self.table.rowCount()
         self.table.insertRow(row)
 
         checkbox = QCheckBox()
+        checkbox.stateChanged.connect(self.update_select_all_state) # 개별 체크박스 시그널 연결
         w = QWidget()
         l = QHBoxLayout(w)
         l.addWidget(checkbox)
@@ -365,6 +421,7 @@ class WrongAnswerManager(QMainWindow):
         self.mark_row_as_modified(row)
         self.update_row_count()
         self.log("➕ 새 행이 추가되었습니다.")
+        self.update_select_all_state()
 
     def delete_selected(self):
         rows_to_remove = [
@@ -379,6 +436,7 @@ class WrongAnswerManager(QMainWindow):
         self.modified = True
         self.log(f"🗑️ {len(rows_to_remove)}개 행 삭제됨")
         self.update_row_count()
+        self.update_select_all_state()
 
     def save_all(self, silent=False):
         new_users = []
