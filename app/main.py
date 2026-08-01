@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QSplitter,
     QStatusBar,
     QStyle,
     QTableWidget,
@@ -78,21 +79,33 @@ class WrongAnswerManager(QMainWindow):
         # --- 검색 ---
         self.setup_search_ui(main_layout)
 
-        # --- 테이블 및 전체 선택 체크박스 ---
+        # --- 메인 분할 스플리터 (테이블 영역 & 로그 영역 구분) ---
+        splitter = QSplitter(Qt.Vertical)
+
+        # 1) 상단 테이블 영역
+        table_container = QWidget()
+        table_layout = QVBoxLayout(table_container)
+        table_layout.setContentsMargins(0, 0, 0, 0)
+
         self.select_all_checkbox = QCheckBox("전체 선택")
         self.select_all_checkbox.setToolTip("보이는 모든 항목을 선택/해제합니다.")
         checkbox_layout = QHBoxLayout()
         checkbox_layout.addWidget(self.select_all_checkbox)
         checkbox_layout.addStretch()
-        # 체크박스 열(0)의 너비(40)와 여백(10)을 고려하여 왼쪽 마진 설정
         checkbox_layout.setContentsMargins(10, 0, 0, 5)
-        main_layout.addLayout(checkbox_layout)
+        table_layout.addLayout(checkbox_layout)
 
         self.table = QTableWidget(0, 4)
         self.setup_table()
-        main_layout.addWidget(self.table)
+        table_layout.addWidget(self.table)
 
-        # --- 로그 ---
+        splitter.addWidget(table_container)
+
+        # 2) 하단 로그 영역
+        log_container = QWidget()
+        log_layout = QVBoxLayout(log_container)
+        log_layout.setContentsMargins(0, 0, 0, 0)
+
         log_header_layout = QHBoxLayout()
         log_header_layout.addWidget(QLabel("로그:"))
         log_header_layout.addStretch()
@@ -101,11 +114,20 @@ class WrongAnswerManager(QMainWindow):
         self.clear_log_btn.setFixedSize(24, 24)
         self.clear_log_btn.setToolTip("로그 지우기")
         log_header_layout.addWidget(self.clear_log_btn)
-        main_layout.addLayout(log_header_layout)
+        log_layout.addLayout(log_header_layout)
 
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
-        main_layout.addWidget(self.log_output)
+        log_layout.addWidget(self.log_output)
+
+        splitter.addWidget(log_container)
+
+        # 스플리터 비율 및 초기 크기 설정 (테이블 넓게, 로그 영역 작게)
+        splitter.setStretchFactor(0, 4)
+        splitter.setStretchFactor(1, 1)
+        splitter.setSizes([450, 120])
+
+        main_layout.addWidget(splitter)
 
         # --- 이벤트 연결 ---
         self.connect_signals()
@@ -145,10 +167,10 @@ class WrongAnswerManager(QMainWindow):
 
     def setup_buttons(self, parent_layout):
         btn_layout_1 = QHBoxLayout()
-        self.add_btn = QPushButton("신규")
-        self.del_btn = QPushButton("삭제")
-        self.save_btn = QPushButton("저장")
-        self.pdf_btn = QPushButton("PDF 저장")
+        self.add_btn = QPushButton("학생 추가")
+        self.del_btn = QPushButton("학생 삭제")
+        self.save_btn = QPushButton("학생 저장")
+        self.pdf_btn = QPushButton("오답노트 PDF 저장")
         self.refresh_btn = QPushButton("새로고침")
         for btn in [self.add_btn, self.del_btn, self.save_btn, self.pdf_btn, self.refresh_btn]:
             btn_layout_1.addWidget(btn)
@@ -160,9 +182,9 @@ class WrongAnswerManager(QMainWindow):
         parent_layout.addWidget(separator)
 
         btn_layout_2 = QHBoxLayout()
-        btn_layout_2.addWidget(QLabel("데이터 관리:"))
-        self.excel_export_btn = QPushButton("엑셀 Export")
-        self.excel_import_btn = QPushButton("엑셀 Import")
+        btn_layout_2.addWidget(QLabel("학생 관리:"))
+        self.excel_export_btn = QPushButton("학생데이터 내보내기")
+        self.excel_import_btn = QPushButton("학생데이터 불러오기")
         btn_layout_2.addWidget(self.excel_export_btn)
         btn_layout_2.addWidget(self.excel_import_btn)
         btn_layout_2.addStretch()
