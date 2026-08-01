@@ -105,7 +105,7 @@ class PathDialog(QDialog):
 
     # --- 설정 로드 / 저장 ---
     def set_default_config(self):
-        self.config = load_previous_config()
+        self.config = load_previous_config() or {}
         self.pdf_input.setText(self.config.get("template_dir", ""))
         self.src_input.setText(self.config.get("source_dir", DEFAULT_SRC))
         self.dst_input.setText(self.config.get("target_dir", DEFAULT_DST))

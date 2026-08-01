@@ -30,6 +30,7 @@ from PySide6.QtWidgets import (
 )
 
 from config import (
+    CONFIG_FILE,
     DEFAULT_DST,
     DEFAULT_SRC,
     load_previous_config,
@@ -333,8 +334,8 @@ class WrongAnswerManager(QMainWindow):
             self.search_timer.stop()  # 혹시 모를 타이머 중지
             self.filter_table()  # 필터 즉시 초기화
 
-            self.config = load_previous_config()
-            self.users = self.config.get("users", [])
+            self.config = load_previous_config() or {"users": []}
+            self.users = self.config.get("users", []) if self.config else []
             self.log("🔄 데이터를 새로고침했습니다.")
 
         self.table.blockSignals(True)
@@ -578,13 +579,57 @@ class WrongAnswerManager(QMainWindow):
             self.log("PDF 설정 완료!")
 
     def initialize_config(self):
-        if not os.path.exists("prevConfig.json"):
-            QMessageBox.information(self, "초기 설정", "초기 설정을 진행합니다.\n원본/대상 폴더를 선택해주세요.")
-            src = QFileDialog.getExistingDirectory(self, "원본 폴더 선택") or DEFAULT_SRC
-            dst = QFileDialog.getExistingDirectory(self, "대상 폴더 선택") or DEFAULT_DST
-            self.config.update({"source_dir": src, "target_dir": dst})
+        if not os.path.exists(CONFIG_FILE) or not self.config.get("configured", False):
+            # 1. 최초 실행 환영 안내 메시지
+            QMessageBox.information(
+                self,
+                "최초 실행 안내 (온보딩 가이드)",
+                "오답노트 관리 프로그램에 오신 것을 환영합니다!\n\n"
+                "처음 실행하시는 사용자를 위해 필수 설정 2단계를 진행합니다:\n\n"
+                " [1단계: 경로 설정] - PDF 템플릿 파일, 이미지 원본 폴더(오답노트로 사용할 문제 이미지들이 들어있는 폴더), PDF 저장 대상 폴더 지정\n"
+                " [2단계: PDF 이미지 설정] - PDF 페이지 내 이미지 크기, 여백 및 위치 조정\n\n"
+                "'확인' 버튼을 누르시면 1단계 [경로 설정]으로 이동합니다.",
+            )
+
+            # --- 1단계: 경로 설정 (PathDialog) ---
+            path_dlg = PathDialog(self)
+            path_dlg.setWindowTitle("경로 설정 (1/2단계)")
+            if path_dlg.exec() == QDialog.Accepted:
+                self.log("🟢 1단계: 경로 설정이 저장되었습니다.")
+            else:
+                self.log("⚠️ 1단계: 경로 설정을 건너뛰었습니다.")
+
+            # 2단계 안내 메시지
+            QMessageBox.information(
+                self,
+                "2단계: PDF 이미지 및 여백 설정 안내",
+                "이어서 [2단계: PDF 이미지 및 여백 설정]을 진행합니다.\n\n"
+                "오답노트 PDF 출력 시 삽입될 이미지의 가로/세로 크기 및 좌우/상하 여백을 조정할 수 있습니다.\n"
+                "우측 미리보기 화면을 참고하여 설정해 주세요.(추후에 수정할수있습니다.)",
+            )
+
+            # --- 2단계: PDF 이미지 설정 (DialogPdfConfig) ---
+            pdf_dlg = DialogPdfConfig(self)
+            pdf_dlg.setWindowTitle("PDF 이미지 설정 (2/2단계)")
+            if pdf_dlg.exec() == QDialog.Accepted:
+                self.log("🟢 2단계: PDF 이미지 설정이 저장되었습니다.")
+            else:
+                self.log("⚠️ 2단계: PDF 이미지 설정을 건너뛰었습니다.")
+
+            # 설정 완료 상태 저장
+            self.config = load_previous_config() or {}
+            self.config["configured"] = True
             save_config(self.config)
-            self.log("🟢 초기 설정 완료")
+            self.log("🎉 모든 초기 설정 단계가 완료되었습니다.")
+
+            # 완료 안내 메시지
+            QMessageBox.information(
+                self,
+                "초기 설정 완료",
+                "🎉 축하합니다! 모든 초기 설정 과정이 완료되었습니다.\n\n"
+                "이제 학생 데이터를 등록하고 '오답노트 PDF 저장' 버튼을 누르면 설정된 양식대로 PDF가 자동 생성됩니다.\n"
+                "(설정은 언제든지 메뉴의 '설정' 항목에서 수정할 수 있습니다.)",
+            )
 
     def show_version_dialog(self):
         QMessageBox.information(self, "버전 정보", "오답노트 관리 프로그램 v1.1.0")

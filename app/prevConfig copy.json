@@ -1,0 +1,136 @@
+{
+  "source_dir": "C:/Users/paul/Desktop/오답노트",
+  "target_dir": "C:\\Users\\paul\\Desktop\\오답노트2",
+  "template_dir": "C:/Users/paul/Desktop/dev/파이썬qt/app/template.pdf",
+  "file_names": "5",
+  "users": [
+    {
+      "name": "학생1",
+      "note_title": "중간고사1",
+      "note_numbers": "5"
+    },
+    {
+      "name": "학생2",
+      "note_title": "중간고사2",
+      "note_numbers": "5,6,7"
+    },
+    {
+      "name": "학생3",
+      "note_title": "중간고사3",
+      "note_numbers": "12"
+    },
+    {
+      "name": "학생4",
+      "note_title": "중간고사4",
+      "note_numbers": "34"
+    },
+    {
+      "name": "학생5",
+      "note_title": "중간고사5",
+      "note_numbers": "5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24"
+    },
+    {
+      "name": "학생6",
+      "note_title": "중간고사1",
+      "note_numbers": "5"
+    },
+    {
+      "name": "학생7",
+      "note_title": "중간고사2",
+      "note_numbers": "5,6,7"
+    },
+    {
+      "name": "학생8",
+      "note_title": "중간고사3",
+      "note_numbers": "1,2,3,4"
+    },
+    {
+      "name": "학생9",
+      "note_title": "중간고사4",
+      "note_numbers": "34"
+    },
+    {
+      "name": "학생10",
+      "note_title": "중간고사5",
+      "note_numbers": "1,2,3,4"
+    },
+    {
+      "name": "학생11",
+      "note_title": "중간고사1",
+      "note_numbers": "5"
+    },
+    {
+      "name": "학생12",
+      "note_title": "중간고사2",
+      "note_numbers": "5,6,7"
+    },
+    {
+      "name": "학생13",
+      "note_title": "중간고사3",
+      "note_numbers": "1,2,3,4"
+    },
+    {
+      "name": "학생14",
+      "note_title": "중간고사4",
+      "note_numbers": "34"
+    },
+    {
+      "name": "학생15",
+      "note_title": "중간고사5",
+      "note_numbers": "1,2,3,4"
+    },
+    {
+      "name": "학생16",
+      "note_title": "중간고사1",
+      "note_numbers": "5"
+    },
+    {
+      "name": "학생17",
+      "note_title": "중간고사2",
+      "note_numbers": "5,6,7"
+    },
+    {
+      "name": "학생18",
+      "note_title": "중간고사3",
+      "note_numbers": "1,2,3,4"
+    },
+    {
+      "name": "학생19",
+      "note_title": "중간고사4",
+      "note_numbers": "34"
+    },
+    {
+      "name": "학생20",
+      "note_title": "중간고사5",
+      "note_numbers": "1,2,3,4"
+    },
+    {
+      "name": "학생21",
+      "note_title": "중간고사1",
+      "note_numbers": "5"
+    },
+    {
+      "name": "학생22",
+      "note_title": "중간고사2",
+      "note_numbers": "5,6,7"
+    },
+    {
+      "name": "학생23",
+      "note_title": "중간고사3",
+      "note_numbers": "1,2,3,4,5"
+    },
+    {
+      "name": "학생24",
+      "note_title": "중간고사4",
+      "note_numbers": "34"
+    }
+  ],
+  "h_margin": 20,
+  "v_margin": 20,
+  "target_w": 300,
+  "target_h": 160,
+  "x_offset1": -5,
+  "y_offset1": 104,
+  "x_offset2": 0,
+  "y_offset2": 154
+}
